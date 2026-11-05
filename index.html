@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>생각 쑥쑥 마인드맵</title>
-  <!-- 통신 및 QR 라이브러리: 로드 실패 시에도 본문이 멈추지 않도록 구성 -->
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -326,7 +325,7 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
-    /* 5. 손그림 알약 툴바 */
+    /* 5. 알약형 손그림 툴바 */
     .pen-capsule-bar {
       position: absolute;
       bottom: 20px;
@@ -468,12 +467,12 @@
       justify-content: center;
       margin: 8px 0;
     }
-    #qrcode-canvas-box canvas, #qrcode-canvas-box img {
+    #qrcode-canvas-box img {
       border: 8px solid white;
       border-radius: 16px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.15);
-      max-width: 220px;
-      max-height: 220px;
+      width: 200px;
+      height: 200px;
     }
 
     .pin-box {
@@ -637,7 +636,7 @@
   <div class="q-banner-wrap" id="q-wrap">
     <div class="q-banner" id="q-banner">
       <span>💬</span>
-      <span id="q-text">AI 하면 떠오르는 게 있나요?</span>
+      <span id="q-text">무엇이든 떠오르는 생각을 자유롭게 펼쳐보세요!</span>
       <button class="btn-next-q" onclick="nextQ()">다른 생각 열기 ➔</button>
     </div>
     <button class="btn-tog-q" id="btn-tog-q" onclick="toggleQ()">질문 창 접기 ▲</button>
@@ -723,7 +722,6 @@
   </div>
 
   <script>
-    // 태블릿 Canvas 구형 브라우저 roundRect 호환 폴리필
     if (!CanvasRenderingContext2D.prototype.roundRect) {
       CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
         if (w < 2 * r) r = w / 2;
@@ -740,12 +738,11 @@
     }
 
     const questions = [
-      'AI 하면 떠오르는 게 있나요?',
-      '우리 동네를 돕는 로봇이 있다면 무엇을 할 수 있을까요?',
-      '로봇이 우리 지역을 지키려면 어디로 가야 할까요?',
-      '어떤 위험이나 문제가 생길 수 있을까요?',
-      '로봇에게 어떤 특별한 기능이 필요할까요?',
-      '우리가 로봇과 함께 무엇을 할 수 있을까요?'
+      '무엇이든 떠오르는 생각을 자유롭게 펼쳐보세요!',
+      '우리 지역의 자랑거리나 명소는 어디가 있을까요?',
+      '그곳을 지키거나 돕기 위해 필요한 것은 무엇일까요?',
+      '로봇이나 AI가 함께한다면 어떤 일을 할 수 있을까요?',
+      '우리가 다 같이 힘을 모을 수 있는 방법은 무엇일까요?'
     ];
     let qIdx = 0;
     function nextQ() {
@@ -987,7 +984,7 @@
     }, { passive: false });
 
     // ==========================================
-    // 마인드맵 로직
+    // 마인드맵 로직 (자유 가지 구조)
     // ==========================================
     function drawLines() {
       const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -1018,11 +1015,9 @@
       });
     }
 
+    // 💡 초기화: 고정된 가지 없이 순수하게 중심 생각 하나로 시작!
     function initMap(topic) {
       nodes = [{ id: 'root', parentId: null, text: topic, x: 2000, y: 1500, theme: null, isRoot: true, count: 1 }];
-      addNode('root', '위험과 문제', 1700, 1320, themes[0]);
-      addNode('root', '로봇의 기능', 2300, 1360, themes[1]);
-      addNode('root', '도울 장소', 2000, 1720, themes[2]);
       render();
       resetZ();
       setTimeout(drawLines, 30);
@@ -1049,9 +1044,12 @@
       const clean = word.trim();
       if (!clean) return;
 
+      const rootNode = nodes.find(n => n.isRoot);
       let parentNode = nodes.find(n => n.id === targetParentId);
-      if (!parentNode) {
-        parentNode = nodes.find(n => n.isRoot);
+      
+      // 타깃이 없거나 'NEW_ROOT'일 경우 중심 노드 밑에 새로운 1차 가지를 생성
+      if (!parentNode || targetParentId === 'NEW_ROOT') {
+        parentNode = rootNode;
       }
       if (!parentNode) return;
 
@@ -1066,16 +1064,16 @@
         
         let baseAngle = Math.atan2(parentNode.y - 1500, parentNode.x - 2000);
         if (parentNode.isRoot) {
-          baseAngle = count * 1.1;
+          baseAngle = count * 1.15;
         } else {
-          baseAngle = baseAngle + (count - 1.5) * 0.45;
+          baseAngle = baseAngle + (count - 1) * 0.45;
         }
 
-        const dist = 180 + (count % 2) * 35;
+        const dist = 190 + (count % 3) * 35;
         const nx = parentNode.x + Math.cos(baseAngle) * dist;
         const ny = parentNode.y + Math.sin(baseAngle) * dist;
 
-        addNode(parentNode.id, clean, nx, ny, parentNode.theme);
+        addNode(parentNode.id, clean, nx, ny, parentNode.isRoot ? null : parentNode.theme);
         showToast(`💡 [${parentNode.text}] ➔ "${clean}" 가지 뻗기!`);
       }
       render();
@@ -1279,7 +1277,7 @@
     }
 
     // ==========================================
-    // 통신 및 화면 초기화 (에러 원천 차단)
+    // 실시간 동기화
     // ==========================================
     const urlParams = new URLSearchParams(window.location.search);
     const hostRoomId = urlParams.get('room');
@@ -1287,7 +1285,7 @@
     let peer = null;
     let conn = null;
     let activeConnections = [];
-    let studentSelectedParentId = null;
+    let studentSelectedParentId = 'root';
 
     function getBranchListPayload() {
       return nodes.map(n => ({
@@ -1306,10 +1304,7 @@
     }
 
     function setupNetworking() {
-      if (typeof Peer === 'undefined') {
-        console.warn('PeerJS 라이브러리 연결 대기 중...');
-        return;
-      }
+      if (typeof Peer === 'undefined') return;
 
       if (hostRoomId) {
         // [학생 모드]
@@ -1352,7 +1347,6 @@
             document.getElementById('pin-display').textContent = pinCode;
             const joinUrl = window.location.origin + window.location.pathname + '?room=' + id;
             
-            // 안전한 SVG QR 생성 (오류 발생 시에도 백지 방지)
             const box = document.getElementById('qrcode-canvas-box');
             box.innerHTML = `<img src="https://quickchart.io/qr?text=${encodeURIComponent(joinUrl)}&size=200&ecLevel=H" alt="접속 QR" style="width:200px; height:200px;" onerror="this.style.display='none'">`;
           });
@@ -1379,18 +1373,19 @@
       }
     }
 
+    // 💡 학생 화면 가지 칩: 화면의 노드 상태를 그대로 반영
     function renderStudentBranchChips(branches) {
       const box = document.getElementById('st-branch-list');
       box.innerHTML = '';
       if (!branches || branches.length === 0) return;
 
-      branches.forEach((b, idx) => {
+      // 1. 현재 화면에 열려있는 모든 노드(중심 생각 + 기존 가지들) 칩 생성
+      branches.forEach((b) => {
         const chip = document.createElement('div');
         chip.className = 'branch-chip';
         chip.textContent = b.isRoot ? `🌟 [중심] ${b.text}` : `🌿 ${b.text}`;
         
-        if (studentSelectedParentId === b.id || (!studentSelectedParentId && idx === 1)) {
-          studentSelectedParentId = b.id;
+        if (studentSelectedParentId === b.id) {
           chip.classList.add('selected');
         }
 
@@ -1402,15 +1397,26 @@
 
         box.appendChild(chip);
       });
+
+      // 2. 학생이 직접 새 갈래를 열 수 있는 특수 칩 제공
+      const newBranchChip = document.createElement('div');
+      newBranchChip.className = 'branch-chip';
+      newBranchChip.style.borderStyle = 'dashed';
+      newBranchChip.textContent = '➕ 새로운 가지로 뻗기';
+      if (studentSelectedParentId === 'NEW_ROOT') {
+        newBranchChip.classList.add('selected');
+      }
+      newBranchChip.addEventListener('click', () => {
+        document.querySelectorAll('.branch-chip').forEach(c => c.classList.remove('selected'));
+        newBranchChip.classList.add('selected');
+        studentSelectedParentId = 'NEW_ROOT';
+      });
+      box.appendChild(newBranchChip);
     }
 
     function sendStudentWord() {
       const inp = document.getElementById('st-word-input');
       const val = inp.value.trim();
-      if (!studentSelectedParentId) {
-        alert('먼저 연결할 가지를 위에서 하나 선택해주세요!');
-        return;
-      }
       if (!val) {
         alert('단어를 적어주세요!');
         return;
@@ -1418,11 +1424,11 @@
       if (conn && conn.open) {
         conn.send({
           type: 'SUBMIT_WORD',
-          parentId: studentSelectedParentId,
+          parentId: studentSelectedParentId || 'root',
           word: val
         });
         inp.value = '';
-        alert(`🚀 "${val}" 생각이 선생님 화면의 선택한 가지로 날아갔어요!`);
+        alert(`🚀 "${val}" 생각이 마인드맵으로 날아갔어요!`);
       } else {
         alert('선생님 화면과 연결 중입니다. 잠시 후 다시 눌러주세요.');
       }
@@ -1448,7 +1454,6 @@
       document.getElementById('qr-modal').classList.remove('open');
     }
 
-    // 💡 화면 렌더링을 1순위로 실행하여 백지 현상 원천 방지
     window.onload = () => {
       try {
         cvs.width = 4000;
@@ -1461,13 +1466,13 @@
         svgElem.setAttribute('viewBox', '0 0 4000 3000');
 
         if (!hostRoomId) {
+          // 💡 기본값을 중심 생각 하나만 있는 깨끗한 상태로 설정
           initMap('우리 지역 랜드마크');
         }
       } catch(err) {
         console.error('Canvas/DOM 마운트 오류:', err);
       }
 
-      // 네트워크 및 통신 설정은 화면이 그려진 후 안전하게 실행
       setTimeout(setupNetworking, 100);
     };
   </script>
