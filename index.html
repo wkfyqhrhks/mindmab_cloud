@@ -513,7 +513,7 @@
       margin-top: 12px;
     }
 
-    /* 7. 학생 참여 전용 뷰 */
+    /* 7. 학생 참여 화면 */
     #student-view {
       display: none;
       position: fixed;
@@ -984,7 +984,7 @@
     }, { passive: false });
 
     // ==========================================
-    // 마인드맵 로직 (자유 가지 구조)
+    // 마인드맵 로직 (선 렌더링 즉각 반영 보강)
     // ==========================================
     function drawLines() {
       const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -1015,7 +1015,6 @@
       });
     }
 
-    // 💡 초기화: 고정된 가지 없이 순수하게 중심 생각 하나로 시작!
     function initMap(topic) {
       nodes = [{ id: 'root', parentId: null, text: topic, x: 2000, y: 1500, theme: null, isRoot: true, count: 1 }];
       render();
@@ -1035,7 +1034,11 @@
       const node = { id, parentId: pId, text: text || '새로운 생각', x, y, theme: t, isRoot: false, count: 1 };
       nodes.push(node);
       render();
+      
+      // 💡 노드 추가 즉시 및 DOM 안착 후 2회 강제 렌더링으로 선 끊김 방지
       drawLines();
+      setTimeout(drawLines, 16);
+
       broadcastBranchList();
       return node;
     }
@@ -1047,7 +1050,6 @@
       const rootNode = nodes.find(n => n.isRoot);
       let parentNode = nodes.find(n => n.id === targetParentId);
       
-      // 타깃이 없거나 'NEW_ROOT'일 경우 중심 노드 밑에 새로운 1차 가지를 생성
       if (!parentNode || targetParentId === 'NEW_ROOT') {
         parentNode = rootNode;
       }
@@ -1058,6 +1060,8 @@
       if (existing) {
         existing.count = (existing.count || 1) + 1;
         showToast(`🎉 [${parentNode.text}]에 "${clean}" 생각이 또 나왔어요! (×${existing.count})`);
+        render();
+        drawLines();
       } else {
         const siblings = nodes.filter(n => n.parentId === parentNode.id);
         const count = siblings.length;
@@ -1076,8 +1080,6 @@
         addNode(parentNode.id, clean, nx, ny, parentNode.isRoot ? null : parentNode.theme);
         showToast(`💡 [${parentNode.text}] ➔ "${clean}" 가지 뻗기!`);
       }
-      render();
-      drawLines();
     }
 
     function delNode(id) {
@@ -1307,7 +1309,6 @@
       if (typeof Peer === 'undefined') return;
 
       if (hostRoomId) {
-        // [학생 모드]
         document.getElementById('main-header').style.display = 'none';
         document.getElementById('workspace').style.display = 'none';
         document.getElementById('pen-bar').style.display = 'none';
@@ -1337,7 +1338,6 @@
         });
 
       } else {
-        // [선생님 메인 모드]
         const pinCode = Math.floor(100000 + Math.random() * 900000).toString();
         const myRoomId = 'mindmap' + pinCode;
         
@@ -1373,13 +1373,11 @@
       }
     }
 
-    // 💡 학생 화면 가지 칩: 화면의 노드 상태를 그대로 반영
     function renderStudentBranchChips(branches) {
       const box = document.getElementById('st-branch-list');
       box.innerHTML = '';
       if (!branches || branches.length === 0) return;
 
-      // 1. 현재 화면에 열려있는 모든 노드(중심 생각 + 기존 가지들) 칩 생성
       branches.forEach((b) => {
         const chip = document.createElement('div');
         chip.className = 'branch-chip';
@@ -1398,7 +1396,6 @@
         box.appendChild(chip);
       });
 
-      // 2. 학생이 직접 새 갈래를 열 수 있는 특수 칩 제공
       const newBranchChip = document.createElement('div');
       newBranchChip.className = 'branch-chip';
       newBranchChip.style.borderStyle = 'dashed';
@@ -1466,7 +1463,6 @@
         svgElem.setAttribute('viewBox', '0 0 4000 3000');
 
         if (!hostRoomId) {
-          // 💡 기본값을 중심 생각 하나만 있는 깨끗한 상태로 설정
           initMap('우리 지역 랜드마크');
         }
       } catch(err) {
