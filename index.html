@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>생각 쑥쑥 마인드맵</title>
+  <!-- PeerJS P2P 통신 라이브러리 -->
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- 자체 캔버스 QR코드 라이브러리 (외부 서버 호출 없이 브라우저 내부에서 직접 생성) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
@@ -28,7 +30,7 @@
       position: fixed;
     }
 
-    /* 1. 상단 슬림 헤더 */
+    /* 1. 슬림 헤더 */
     header {
       position: absolute;
       top: 0;
@@ -335,111 +337,4 @@
       background: #FFFFFF;
       border: 4px solid #3182CE;
       border-radius: 50px;
-      padding: 8px 24px;
-      display: none;
-      align-items: center;
-      gap: 14px;
-      z-index: 95;
-      box-shadow: 0 6px 20px rgba(49, 130, 206, 0.2);
-      max-width: 95vw;
-    }
-    .pen-capsule-bar.show { display: flex; }
-    .pill-group { display: flex; align-items: center; gap: 8px; }
-    .group-label { font-size: 17px; color: #2D3748; white-space: nowrap; }
-
-    .btn-tool-pen {
-      border: none;
-      background: #2563EB;
-      color: white;
-      padding: 6px 14px;
-      border-radius: 14px;
-      font-size: 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .btn-tool-pen.active { outline: 3px solid #1D4ED8; }
-
-    .btn-tool-eraser {
-      border: none;
-      background: #F1F5F9;
-      color: #1E293B;
-      padding: 4px 8px;
-      border-radius: 12px;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      line-height: 1.1;
-      width: 40px;
-      height: 56px;
-      letter-spacing: 1.5px;
-      border: 1px solid #CBD5E1;
-    }
-    .btn-tool-eraser.active {
-      background: #E2E8F0;
-      border: 2px solid #2563EB;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .color-dots-wrap {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      overflow-x: auto;
-      padding: 2px 4px;
-    }
-    .c-dot {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 2.5px solid white;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-      flex-shrink: 0;
-      transition: transform 0.1s;
-    }
-    .c-dot.active {
-      transform: scale(1.22);
-      border-color: #1E293B;
-    }
-
-    .btn-w {
-      border: none;
-      background: #F1F5F9;
-      color: #334155;
-      padding: 6px 12px;
-      border-radius: 12px;
-      font-size: 15px;
-      cursor: pointer;
-    }
-    .btn-w.active {
-      background: #FEFCBF;
-      color: #744210;
-      border: 2px solid #ECC94B;
-      font-weight: bold;
-    }
-
-    .toast-msg {
-      position: absolute;
-      top: 72px;
-      right: 20px;
-      background: rgba(15, 23, 42, 0.9);
-      color: #FFFFFF;
-      padding: 8px 16px;
-      border-radius: 16px;
-      font-size: 15px;
-      z-index: 1000;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease;
-    }
-    .toast-msg.show { opacity: 1; }
-
-    /* 6. QR코드 및 웹링크 모달 (선생님 화면) */
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
+      padding: 8px 2
